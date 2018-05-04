@@ -42,11 +42,6 @@ namespace CourseOSTask
             }
         }
 
-        private void materialLabel1_Click(object sender, EventArgs e)
-        {
-           
-        }
-
         private void materialRaisedButton2_Click(object sender, EventArgs e)
         {
             progressSecondTask.Value = Math.Max(progressSecondTask.Value + 10, 100);
@@ -56,5 +51,18 @@ namespace CourseOSTask
         {
             progressSecondTask.Value = Math.Min(progressSecondTask.Value + 10, 100);
         }
+
+        private void chooseCatalogButton_Click(object sender, EventArgs e)
+        {
+            var result = chooseFolderDialog.ShowDialog();
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(chooseFolderDialog.SelectedPath))
+            {
+                pathField.Text = chooseFolderDialog.SelectedPath;
+                //string[] files = Directory.GetFiles(fbd.SelectedPath);
+
+                //System.Windows.Forms.MessageBox.Show("Files found: " + files.Length.ToString(), "Message");
+            }
+        }
+
     }
 }
