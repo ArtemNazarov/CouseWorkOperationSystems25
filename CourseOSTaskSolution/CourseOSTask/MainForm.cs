@@ -8,6 +8,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -49,24 +50,43 @@ namespace CourseOSTask
         private class MyRenderer : ToolStripProfessionalRenderer
         {
             public MyRenderer() : base(new MyColors()) { }
+
+
         }
 
         private class MyColors : ProfessionalColorTable
         {
-            public override Color MenuItemSelected
-            {
-                get {
-                    var materialSkinManager = MaterialSkinManager.Instance;
-                    return Color.Yellow;
-                }
-            }
+            private MaterialSkinManager materialSkinManager = MaterialSkinManager.Instance;
+
             public override Color MenuItemSelectedGradientBegin
             {
-                get { return Color.Orange; }
+                get {
+                    return materialSkinManager.ColorScheme.LightPrimaryColor;
+                }
             }
             public override Color MenuItemSelectedGradientEnd
             {
-                get { return Color.Yellow; }
+
+                get { 
+                    return materialSkinManager.ColorScheme.LightPrimaryColor;
+                }
+            }
+
+            public override Color MenuItemBorder
+            {
+                get {
+                    return materialSkinManager.ColorScheme.DarkPrimaryColor;
+                }
+            }
+
+            public override Color MenuItemPressedGradientBegin
+            {
+                get { return materialSkinManager.ColorScheme.LightPrimaryColor; }
+            }
+
+            public override Color MenuItemPressedGradientEnd
+            {
+                get { return materialSkinManager.ColorScheme.DarkPrimaryColor; }
             }
         }
 
@@ -74,19 +94,11 @@ namespace CourseOSTask
         {
             drivesBox.DataSource = Drives;
             
-            //var msmInstance = MaterialSkinManager.Instance;
-            
-            //MainMenu.BackColor = msmInstance.ColorScheme.DarkPrimaryColor;
-            //MainMenu.ForeColor = msmInstance.ColorScheme.TextColor;
-
-            //var ffamily = msmInstance.ROBOTO_REGULAR_11.FontFamily;
-            //var menuFont = new Font(ffamily, 9);
-            //MainMenu.Font = menuFont;
         }
 
         private void copyStructure_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Копирование ещё не реализовано");
+            Thread copyStructureThread = new Thread(new ThreadStart());
         }
 
         private void closeToolStripMenuItem1_Click(object sender, EventArgs e)
