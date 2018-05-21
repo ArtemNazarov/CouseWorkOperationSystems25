@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32.SafeHandles;
+using static CourseOSTask.HandlesAPI;
 
 namespace CourseOSTask
 {
@@ -95,7 +96,7 @@ namespace CourseOSTask
         private void MainForm_Load(object sender, EventArgs e)
         {
             drivesBox.DataSource = Drives;
-            pathField.Text = @"D:\dev\NetWinForms\check";
+            pathField.Text = @"J:\dev\check";
         }
 
         private void copyStructure_Click(object sender, EventArgs e)
@@ -159,24 +160,64 @@ namespace CourseOSTask
             else
             {
                 var np = neededPath.ToCharArray();
-                np[0] = Char.Parse(drive[0]);
+                np[0] = drive[4];
                 string toPath = new string(np);
                 CopyDirs(neededPath, toPath);
                 MessageBox.Show("Структура каталогов успешно скопирована!");
             }
         }
 
+
+
+
         private void CopyDirs(string fromPath, string toPath)
         {
-            Directory.CreateDirectory(toPath);
+
+            CreateDir(toPath);
             foreach (string s1 in Directory.GetFiles(fromPath))
             {
                 string s2 = toPath + "\\" + Path.GetFileName(s1);
-                File.Copy(s1, s2);
+                CopyFile(s1, s2);
             }
             foreach (string s in Directory.GetDirectories(fromPath))
             {
                 CopyDirs(s, toPath + "\\" + Path.GetFileName(s));
+            }
+        }
+
+        public CopyProgressResult CopyProgressHandler(long total, long transferred, long streamSize, long StreamByteTrans, uint dwStreamNumber, CopyProgressCallbackReason reason, IntPtr hSourceFile, IntPtr hDestinationFile, IntPtr lpData)
+        {
+            return CopyProgressResult.PROGRESS_CONTINUE;
+        }
+
+        private void CopyFile(string oldFile, string newFile)
+        {
+            int pbCancel = 0;
+            CopyFileEx(oldFile, newFile, new CopyProgressRoutine(this.CopyProgressHandler), IntPtr.Zero, ref pbCancel, CopyFileFlags.COPY_FILE_RESTARTABLE);
+        }
+
+        private void CreateDir(string path)
+        {
+            if (!CreateDirectory(path, null))
+            {
+                //считываем код текущей ошибки
+                var err = Marshal.GetLastWin32Error();
+                //если код равен 3, что означает PATH_NOT_FOUND, создаем необходимые для копирования каталоги
+                if (err == 3)
+                {
+                    var catalogs = path.Split('\\');
+                    for (int i = 1; i < catalogs.Length - 1; i++)
+                    {
+                        var resPath = "";
+                        for (int j = 0; j <= i; j++)
+                        {
+                            resPath += catalogs[j] + '\\';
+                        }
+                        CreateDirectory(resPath, null);
+                    }
+                    CreateDirectory(path, null);
+                }
+
             }
         }
 
@@ -218,6 +259,8 @@ namespace CourseOSTask
 
             return bpb;
         }
+
+
 
         private unsafe byte[] ReturnBootSector(SafeFileHandle drive)
         {
