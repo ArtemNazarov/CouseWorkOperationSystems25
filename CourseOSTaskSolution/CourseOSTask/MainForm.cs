@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32.SafeHandles;
-using static CourseOSTask.HandlesAPI;
+using static CourseOSTask.HandleDriveAPI;
 
 namespace CourseOSTask
 {
@@ -63,21 +63,24 @@ namespace CourseOSTask
 
             public override Color MenuItemSelectedGradientBegin
             {
-                get {
+                get
+                {
                     return materialSkinManager.ColorScheme.LightPrimaryColor;
                 }
             }
             public override Color MenuItemSelectedGradientEnd
             {
 
-                get { 
+                get
+                {
                     return materialSkinManager.ColorScheme.LightPrimaryColor;
                 }
             }
 
             public override Color MenuItemBorder
             {
-                get {
+                get
+                {
                     return materialSkinManager.ColorScheme.DarkPrimaryColor;
                 }
             }
@@ -97,6 +100,7 @@ namespace CourseOSTask
         {
             drivesBox.DataSource = Drives;
             pathField.Text = @"J:\dev\check";
+            //chosenFilesBox.
         }
 
         private void copyStructure_Click(object sender, EventArgs e)
@@ -118,27 +122,18 @@ namespace CourseOSTask
             copyStructureThread.Start(ci);
         }
 
-        class CopyInfo
-        {
-
-            public string NeededPath { get; set; }
-            public string SelectedDrive { get; set; }
-
-
-        }
-
         private void CopyStructureThread(object copyInf)
         {
             var copyInfo = (CopyInfo)copyInf;
             var neededPath = copyInfo.NeededPath;
             string drive = "\\\\.\\" + copyInfo.SelectedDrive;
             drive = drive.Remove(drive.Length - 1, 1);
-            FlashDrive = HandlesAPI.CreateFile(
+            FlashDrive = CreateFile(
                 drive,
-                HandlesAPI.GENERIC_READ,
-                HandlesAPI.FILE_SHARE_READ | HandlesAPI.FILE_SHARE_WRITE,
+                GENERIC_READ,
+                FILE_SHARE_READ | FILE_SHARE_WRITE,
                 IntPtr.Zero,
-                HandlesAPI.OPEN_EXISTING,
+                OPEN_EXISTING,
                 0,
                 IntPtr.Zero
             );
@@ -146,8 +141,6 @@ namespace CourseOSTask
             {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             }
-
-
 
             byte[] BootSector = ReturnBootSector(FlashDrive);
 
@@ -162,62 +155,8 @@ namespace CourseOSTask
                 var np = neededPath.ToCharArray();
                 np[0] = drive[4];
                 string toPath = new string(np);
-                CopyDirs(neededPath, toPath);
+                copyInfo.CopyDirs(neededPath, toPath);
                 MessageBox.Show("Структура каталогов успешно скопирована!");
-            }
-        }
-
-
-
-
-        private void CopyDirs(string fromPath, string toPath)
-        {
-
-            CreateDir(toPath);
-            foreach (string s1 in Directory.GetFiles(fromPath))
-            {
-                string s2 = toPath + "\\" + Path.GetFileName(s1);
-                CopyFile(s1, s2);
-            }
-            foreach (string s in Directory.GetDirectories(fromPath))
-            {
-                CopyDirs(s, toPath + "\\" + Path.GetFileName(s));
-            }
-        }
-
-        public CopyProgressResult CopyProgressHandler(long total, long transferred, long streamSize, long StreamByteTrans, uint dwStreamNumber, CopyProgressCallbackReason reason, IntPtr hSourceFile, IntPtr hDestinationFile, IntPtr lpData)
-        {
-            return CopyProgressResult.PROGRESS_CONTINUE;
-        }
-
-        private void CopyFile(string oldFile, string newFile)
-        {
-            int pbCancel = 0;
-            CopyFileEx(oldFile, newFile, new CopyProgressRoutine(this.CopyProgressHandler), IntPtr.Zero, ref pbCancel, CopyFileFlags.COPY_FILE_RESTARTABLE);
-        }
-
-        private void CreateDir(string path)
-        {
-            if (!CreateDirectory(path, null))
-            {
-                //считываем код текущей ошибки
-                var err = Marshal.GetLastWin32Error();
-                //если код равен 3, что означает PATH_NOT_FOUND, создаем необходимые для копирования каталоги
-                if (err == 3)
-                {
-                    var catalogs = path.Split('\\');
-                    for (int i = 1; i < catalogs.Length - 1; i++)
-                    {
-                        var resPath = "";
-                        for (int j = 0; j <= i; j++)
-                        {
-                            resPath += catalogs[j] + '\\';
-                        }
-                        CreateDirectory(resPath, null);
-                    }
-                    CreateDirectory(path, null);
-                }
-
             }
         }
 
@@ -269,7 +208,7 @@ namespace CourseOSTask
 
             fixed (byte* ptr = bytes)
             {
-                HandlesAPI.ReadFile(drive, ptr, Constants.BYTE_IN_SECTOR, BytesRead, IntPtr.Zero); // Считывание первого сектора
+                ReadFile(drive, ptr, Constants.BYTE_IN_SECTOR, BytesRead, IntPtr.Zero); // Считывание первого сектора
             };
 
             return bytes;
@@ -278,6 +217,53 @@ namespace CourseOSTask
         private void closeToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void chooseFilesButton_Click(object sender, EventArgs e)
+        {
+            var result = openFileDialog.ShowDialog();
+            chosenFilesBox.Items.Clear();
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(openFileDialog.SafeFileName))
+            {
+                var files = openFileDialog.FileNames;
+                foreach (var item in files)
+                {
+                    chosenFilesBox.Items.Add(item);
+                }
+                //System.Windows.Forms.MessageBox.Show("Files found: " + files.Length.ToString(), "Message");
+            }
+
+        }
+
+        private void materialRaisedButton1_Click(object sender, EventArgs e)
+        {
+            var files = new List<string>();
+            foreach (var item in chosenFilesBox.Items)
+            {
+                files.Add(item.ToString());
+            }
+
+            //    string drive = "\\\\.\\" + copyInfo.SelectedDrive;
+            //    drive = drive.Remove(drive.Length - 1, 1);
+            //    FlashDrive = HandlesAPI.CreateFile(
+            //            drive,
+            //            HandlesAPI.GENERIC_READ,
+            //            HandlesAPI.FILE_SHARE_READ | HandlesAPI.FILE_SHARE_WRITE,
+            //            IntPtr.Zero,
+            //            HandlesAPI.OPEN_EXISTING,
+            //            0,
+            //            IntPtr.Zero
+            //        );
+            //    if (FlashDrive.IsInvalid)
+            //    {
+            //        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            //    }
+
+
+
+            //    byte[] BootSector = ReturnBootSector(FlashDrive);
+
+            //    var bpb = ReadBPB(BootSector);
         }
     }
 }

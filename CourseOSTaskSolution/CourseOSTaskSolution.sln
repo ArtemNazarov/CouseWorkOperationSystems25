@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2043
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CourseOSTask", "CourseOSTask\CourseOSTask.csproj", "{250DC18D-048C-42A7-BFF1-C3C1C351C76E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NTFS2Threads", "CourseOSTask\NTFS2Threads.csproj", "{250DC18D-048C-42A7-BFF1-C3C1C351C76E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

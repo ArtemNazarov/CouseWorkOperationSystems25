@@ -6,7 +6,7 @@ using Microsoft.Win32.SafeHandles;
 
 namespace CourseOSTask
 {
-    public class HandlesAPI
+    public class HandleDriveAPI
     {
         public const uint GENERIC_READ = 0x80000000;
         public const uint FILE_SHARE_READ = 0x00000001;
