@@ -33,7 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>development.gears-64.ico</ApplicationIcon>
+    <ApplicationIcon>Icons\development.gears-64.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -56,21 +56,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BPB.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="CopyInfo.cs" />
-    <Compile Include="HandleDriveAPI.cs" />
-    <Compile Include="HeaderRecordMFT.cs" />
-    <Compile Include="MainForm.cs">
+    <Compile Include="WinAPI\Attribute.cs" />
+    <Compile Include="WinAPI\AttributeTypes.cs" />
+    <Compile Include="WinAPI\BPB.cs" />
+    <Compile Include="WinAPI\Constants.cs" />
+    <Compile Include="WinAPI\CopyInfo.cs" />
+    <Compile Include="WinAPI\HandleDriveAPI.cs" />
+    <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainForm.Designer.cs">
+    <Compile Include="Forms\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SecurityAttributes.cs" />
-    <EmbeddedResource Include="MainForm.resx">
+    <Compile Include="WinAPI\IndexAllocation.cs" />
+    <Compile Include="WinAPI\IndexHeader.cs" />
+    <Compile Include="WinAPI\IndexHeaderDir.cs" />
+    <Compile Include="WinAPI\IndexRoot.cs" />
+    <Compile Include="WinAPI\LineSegment.cs" />
+    <Compile Include="WinAPI\MFTHandle.cs" />
+    <Compile Include="WinAPI\NTFSHandle.cs" />
+    <Compile Include="WinAPI\SecurityAttributes.cs" />
+    <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -102,7 +110,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="development.gears-64.ico" />
+    <Content Include="Icons\development.gears-64.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

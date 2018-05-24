@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CourseOSTask
 {
-    public struct BPB
+    public class BPB
     {
         public string Signature;
         public int BytePerSec;
@@ -21,5 +21,7 @@ namespace CourseOSTask
         public int ClustersPerMFT;
         public int ClustertPerIndex;
         public ulong SerialNumber;
+
+        
     }
 }
