@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 
 namespace CourseOSTask.WinAPI
 {
-    public class LineSegment
+    public class Segment
     {
         public ulong Start { get; set; }
         public ulong End { get; set; }
 
 
-        public LineSegment()
+        public Segment()
         {
             Start = 0;
             End = 0;
         }
 
-        public LineSegment(ulong start, ulong end)
+        public Segment(ulong start, ulong end)
         {
             Start = start;
             End = end;

@@ -9,25 +9,25 @@ namespace CourseOSTask.WinAPI
     public class Attribute
     {
         /*0x00*/
-        public AttributeTypes Type { get; private set; } //тип атрибута
+        public AttributeTypes Type { get; } //тип атрибута
         /*0x04*/
-        public ushort Length { get; private set; } //длина заголовка используется для перехода к следующему   атрибуту
+        public ushort Length { get; } //длина заголовка используется для перехода к следующему   атрибуту
         /*0x06*/
-        public ushort Reserved { get; private set; }
+        public ushort Reserved { get; }
         /*0x08*/
-        public byte NonResidentFlg { get; private set; } //1 если атрибут нерезидентный, 0 - резидентный
+        public byte NonResidentFlg { get; } //1 если атрибут нерезидентный, 0 - резидентный
         /*0x09*/
-        public byte NameLength { get; private set; } //длина имени атрибута, в символах
+        public byte NameLength { get; } //длина имени атрибута, в символах
         /*0x0A*/
-        public ushort NameOffset { get; private set; } //смещение имени атрибута, относительно заголовка
+        public ushort NameOffset { get; } //смещение имени атрибута, относительно заголовка
                                                        //атрибута
                                                        /*0x0C*/
-        public ushort Flags { get; private set; } //флаги, перечислены в ATTR_FLAGS
+        public ushort Flags { get; } //флаги, перечислены в ATTR_FLAGS
         /*0x0E*/
-        public ushort Instance { get; private set; }
+        public ushort Instance { get; }
 
-        public Resident Resident { get; private set; }
-        public NonResident NonResident { get; private set; }
+        public ResidentAttribute ResidentAttr { get; }
+        public NotResidentAttribute NotResidentAttr { get; }
 
         public Attribute(byte[] sector, int offset)
         {
@@ -63,9 +63,9 @@ namespace CourseOSTask.WinAPI
                     Instance += (ushort)(sector[offset + 0x0E + i] << (i * 8));
 
                 if (NonResidentFlg == 1)
-                    NonResident = new NonResident(sector, offset);
+                    NotResidentAttr = new NotResidentAttribute(sector, offset);
                 else
-                    Resident = new Resident(sector, offset);
+                    ResidentAttr = new ResidentAttribute(sector, offset);
             }
         }
 
@@ -83,9 +83,9 @@ namespace CourseOSTask.WinAPI
             result += "Флаги:" + Flags.ToString() + "\n";
             result += "Идентификатор атрибута:" + Instance.ToString() + "\n";
             if (NonResidentFlg == 1)
-                result += NonResident.ToString();
+                result += NotResidentAttr.ToString();
             else
-                result += Resident.ToString();
+                result += ResidentAttr.ToString();
 
             return result;
         }

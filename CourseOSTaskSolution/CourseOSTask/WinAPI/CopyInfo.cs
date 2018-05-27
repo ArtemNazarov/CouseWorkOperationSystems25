@@ -50,7 +50,7 @@ namespace CourseOSTask
                 //если код равен 3, что означает PATH_NOT_FOUND, создаем необходимые для копирования каталоги
                 if (err == 3)
                 {
-                    var catalogs = path.Split('\\');
+                    var catalogs = path.Split(new [] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
                     for (int i = 1; i < catalogs.Length - 1; i++)
                     {
                         var resPath = "";

@@ -74,10 +74,13 @@
     <Compile Include="WinAPI\IndexHeader.cs" />
     <Compile Include="WinAPI\IndexHeaderDir.cs" />
     <Compile Include="WinAPI\IndexRoot.cs" />
-    <Compile Include="WinAPI\LineSegment.cs" />
+    <Compile Include="WinAPI\NotResidentAttribute.cs" />
+    <Compile Include="WinAPI\ResidentAttribute.cs" />
+    <Compile Include="WinAPI\Segment.cs" />
     <Compile Include="WinAPI\MFTHandle.cs" />
-    <Compile Include="WinAPI\NTFSHandle.cs" />
+    <Compile Include="WinAPI\DiskInfo.cs" />
     <Compile Include="WinAPI\SecurityAttributes.cs" />
+    <Compile Include="Forms\TableView.cs" />
     <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>

@@ -2,12 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CourseOSTask.WinAPI
 {
-    public class NTFSHandle
+    public class DiskInfo
     {
         /// <summary>
         /// Представление диска как файла для прямого чтения
@@ -28,7 +29,7 @@ namespace CourseOSTask.WinAPI
         /// Конструктор
         /// </summary>
         /// <param name="drive">Имя логического диска в формате C:</param>
-        public NTFSHandle(string drive)
+        public DiskInfo(string drive)
         {
             drive = "\\\\.\\" + drive;
 
@@ -42,7 +43,10 @@ namespace CourseOSTask.WinAPI
                 0,
                 IntPtr.Zero
                 );
-
+            if (Drive.IsInvalid)
+            {
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            }
             BPB = new BPB(Drive); // считываем блок параметров БИОС
             MFT = GetFirstMFT();// считываем первую запись МФТ
         }
@@ -171,23 +175,28 @@ namespace CourseOSTask.WinAPI
         /// <summary>
         /// Поиск номера первого сектора записи МФТ
         /// </summary>
-        /// <param name="indexMFT">Номер записи МФТ</param>
+        /// <param name="IndexMFT">Номер записи МФТ</param>
         /// <returns>Номер первого сектора записи МФТ</returns>
-        private int FindSector(int indexMFT)
+        private int FindSector(int IndexMFT)
         {
-            int mftSize = (int)Math.Pow(2, BPB.ClustersPerMFT * -1); // Размер записи МФТ
-            int recordInCluster = BPB.SectorPerCluster * BPB.BytePerSec / mftSize; // Подсчет количества записей МФТ в одном кластере
-            Attribute data = MFT.Attributes.Where(n => n.Type == AttributeTypes.AT_DATA).FirstOrDefault(); // из аттрибутов первой записи МФТ выбираем аттрибут DATA
+            // Размер записи МФТ
+            int mftSize = (int)Math.Pow(2, BPB.ClustersPerMFT * -1);
+            // Подсчет количества записей МФТ в одном кластере
+            int recordInCluster = BPB.SectorPerCluster * BPB.BytePerSec / mftSize;
+            // из аттрибутов первой записи МФТ выбираем аттрибут DATA
+            Attribute data = MFT.Attributes.Where(n => n.Type == AttributeTypes.AT_DATA).FirstOrDefault(); 
             int prevMin = 0;
             int prevMax = 0;
             int maxRec = 0;
             int minRec = 0;
             int run = 0;
-            for (int i = 0; i < data.NonResident.Clusters.Count; i++) // Для всех отрезков, в которых хранится нерезидентный атрибут DATA
+            // Для всех отрезков, в которых хранится нерезидентный атрибут DATA
+            for (int i = 0; i < data.NotResidentAttr.Clusters.Count; i++) 
             {
                 minRec = prevMax; // Максимальный номер записи МФТ в предыдущем отрезке (0 для первого отрезка), является минимальным номером записи в текущем отрезке
-                maxRec = (int)(data.NonResident.Clusters[i].End - data.NonResident.Clusters[i].Start) * recordInCluster + prevMax;  // Максимальный номер записи МФТ в текущем отрезке
-                if (indexMFT < maxRec) // Если запись номер записи МФТ попадает в текущий отрезок, то запоминаем номер отрезка
+                maxRec = (int)(data.NotResidentAttr.Clusters[i].End - data.NotResidentAttr.Clusters[i].Start) * recordInCluster + prevMax;  // Максимальный номер записи МФТ в текущем отрезке
+                // Если запись номер записи МФТ попадает в текущий отрезок, то запоминаем номер отрезка
+                if (IndexMFT < maxRec) 
                 {
                     run = i;
                     break;
@@ -196,12 +205,29 @@ namespace CourseOSTask.WinAPI
                 prevMin = minRec;
                 prevMax = maxRec;
             }
-
-            int startSectorOfCluster = (int)data.NonResident.Clusters[run].Start * BPB.SectorPerCluster; // Вычисляем начальный сектор отрезка, в котором хранится искомая запись
-            int recordInRun = indexMFT - minRec; // вычисляем номер записи внутри отрезка
-            int number = startSectorOfCluster + recordInRun * (mftSize / BPB.BytePerSec); // вычисляем первый сектор записи МФТ
+            // Вычисляем начальный сектор отрезка, в котором хранится искомая запись
+            int startSectorOfCluster = (int)data.NotResidentAttr.Clusters[run].Start * BPB.SectorPerCluster;
+            // вычисляем номер записи внутри отрезка
+            int recordInRun = IndexMFT - minRec;
+            // вычисляем первый сектор записи МФТ
+            int number = startSectorOfCluster + recordInRun * (mftSize / BPB.BytePerSec); 
 
             return number;
+        }
+
+        // функция поиска файла в индексных элементах каталога по имени файла
+        public static int FoundSubdir(MFTHandle record, string dir) 
+        {
+            int result = 0;
+            // для всех индексных элементов каталога проверяем 
+            foreach (var index in record.Indexes) 
+            {
+                // если имя файла совпадает с введенным, то сохраняем номер записи МФТ из индексного элемента
+                if (index.FileNameString == dir) 
+                    result = (int)index.IndexedFile;
+            }
+            // возвращаем найденный номер
+            return result; 
         }
     }
 }

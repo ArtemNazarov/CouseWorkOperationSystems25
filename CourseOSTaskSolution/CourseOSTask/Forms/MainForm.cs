@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CourseOSTask.WinAPI;
 using Microsoft.Win32.SafeHandles;
 using static CourseOSTask.HandleDriveAPI;
 
@@ -20,7 +21,6 @@ namespace CourseOSTask
     public partial class MainForm : MaterialForm
     {
         private string[] Drives { get; set; }
-        private static SafeFileHandle FlashDrive;
 
 
         public MainForm()
@@ -128,27 +128,12 @@ namespace CourseOSTask
             var neededPath = copyInfo.NeededPath;
             string drive = "\\\\.\\" + copyInfo.SelectedDrive;
             drive = drive.Remove(drive.Length - 1, 1);
-            FlashDrive = CreateFile(
-                drive,
-                GENERIC_READ,
-                FILE_SHARE_READ | FILE_SHARE_WRITE,
-                IntPtr.Zero,
-                OPEN_EXISTING,
-                0,
-                IntPtr.Zero
-            );
-            if (FlashDrive.IsInvalid)
-            {
-                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            }
 
-            byte[] BootSector = ReturnBootSector(FlashDrive);
-
-            var bpb = ReadBPB(BootSector);
+            DiskInfo diskInfoHandle = new DiskInfo(drive);
+            var bpb = diskInfoHandle.BPB;
             if (bpb.Signature != "NTFS    ")
             {
                 MessageBox.Show("Данный раздел не является томом NTFS");
-                return;
             }
             else
             {
@@ -158,60 +143,6 @@ namespace CourseOSTask
                 copyInfo.CopyDirs(neededPath, toPath);
                 MessageBox.Show("Структура каталогов успешно скопирована!");
             }
-        }
-
-        private BPB ReadBPB(byte[] sector)
-        {
-            BPB bpb = new BPB();
-            bpb.Signature = "";
-            for (int i = 0; i < 8; i++)
-                bpb.Signature += (char)sector[0x3 + i];
-
-            bpb.BytePerSec = sector[0xB] + (sector[0xC] << 8);
-            bpb.SectorPerCluster = sector[Constants.SEC_PER_CLUS];
-            bpb.TypeOfDrive = sector[0x15];
-            bpb.SecPerTrack = sector[0x18];
-            bpb.NumHeads = sector[0x1A];
-
-            bpb.HiddenSec = 0;
-            for (int i = 0; i < 4; i++)
-                bpb.HiddenSec += sector[0x1C + i] << (i * 8);
-
-            bpb.SecCount = 0;
-            for (int i = 0; i < 8; i++)
-                bpb.SecCount += (ulong)sector[0x28 + i] << (i * 8);
-
-            bpb.FirstClusterMFT = 0;
-            for (int i = 0; i < 8; i++)
-                bpb.FirstClusterMFT += (ulong)sector[i + Constants.START_CLUS_MFT] << (8 * i);
-
-            bpb.FirstClusterMirror = 0;
-            for (int i = 0; i < 8; i++)
-                bpb.FirstClusterMirror += (ulong)sector[i + Constants.START_CLUS_MFT + 8] << (8 * i);
-
-            bpb.ClustersPerMFT = (sbyte)sector[0x40];
-            bpb.ClustertPerIndex = (sbyte)sector[0x44];
-
-            bpb.SerialNumber = 0;
-            for (int i = 0; i < 8; i++)
-                bpb.SerialNumber += (ulong)sector[i + 0x48] << (8 * i);
-
-            return bpb;
-        }
-
-
-
-        private unsafe byte[] ReturnBootSector(SafeFileHandle drive)
-        {
-            byte[] bytes = new byte[Constants.BYTE_IN_SECTOR]; // BOOT сектор в виде одномерного массива байтов
-            IntPtr BytesRead = IntPtr.Zero;
-
-            fixed (byte* ptr = bytes)
-            {
-                ReadFile(drive, ptr, Constants.BYTE_IN_SECTOR, BytesRead, IntPtr.Zero); // Считывание первого сектора
-            };
-
-            return bytes;
         }
 
         private void closeToolStripMenuItem1_Click(object sender, EventArgs e)
@@ -238,32 +169,38 @@ namespace CourseOSTask
         private void materialRaisedButton1_Click(object sender, EventArgs e)
         {
             var files = new List<string>();
+            var mftViewTable = new List<TableView>();
+
             foreach (var item in chosenFilesBox.Items)
             {
                 files.Add(item.ToString());
             }
 
-            //    string drive = "\\\\.\\" + copyInfo.SelectedDrive;
-            //    drive = drive.Remove(drive.Length - 1, 1);
-            //    FlashDrive = HandlesAPI.CreateFile(
-            //            drive,
-            //            HandlesAPI.GENERIC_READ,
-            //            HandlesAPI.FILE_SHARE_READ | HandlesAPI.FILE_SHARE_WRITE,
-            //            IntPtr.Zero,
-            //            HandlesAPI.OPEN_EXISTING,
-            //            0,
-            //            IntPtr.Zero
-            //        );
-            //    if (FlashDrive.IsInvalid)
-            //    {
-            //        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            //    }
+            foreach (var file in files)
+            {
+                var catalogs = file.Split(new [] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);//Разбиваем полный путь на имена каталогов)
+                DiskInfo diskHandle = new DiskInfo(catalogs[0]);
+                int nextRecord = 5; // 5 запись -- корневой каталог, поиск начинаем с него
+                MFTHandle root; // переменная для хранения текущего каталога
+                for (int i = 1; i < catalogs.Length; i++)
+                {
+                    root = diskHandle.GetMftRecord(nextRecord); // читаем следующую запись МФТ со всеми аттрибутами, включая INDEX_ROOT и INDEX_ALLOCATION
+                    nextRecord = DiskInfo.FoundSubdir(root, catalogs[i]); // Ищем номер записи МФТ следующего каталога
+                }
 
+                MFTHandle detectedFile = diskHandle.GetMftRecord(nextRecord);
 
+                mftViewTable.Add(new TableView(detectedFile)); // Первым отображается запись самого каталога
+                foreach (var index in detectedFile.Indexes)
+                {
+                    mftViewTable.Add(new TableView(diskHandle.GetMftRecord((int)index.IndexedFile))); // добавляем в отображаемые записи сведения о файле в каталоге
+                }
+            }
 
-            //    byte[] BootSector = ReturnBootSector(FlashDrive);
+            dataGridView1.DataSource = null;
+            // выводим данные в таблицу
+            dataGridView1.DataSource = mftViewTable;
 
-            //    var bpb = ReadBPB(BootSector);
         }
     }
 }

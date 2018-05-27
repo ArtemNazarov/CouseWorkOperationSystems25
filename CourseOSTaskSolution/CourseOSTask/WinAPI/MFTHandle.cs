@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CourseOSTask.WinAPI
 {
-    class MFTHandle
+    public class MFTHandle
     {
         public string Signature { get; set; }
         public ushort UsaOffset { get; set; }
@@ -28,10 +28,10 @@ namespace CourseOSTask.WinAPI
         public string FileName { get; private set; }
 
         public ulong ParentDir { get; set; }
-
+        public DiskInfo DiskInfo { get; set; }
         public List<Attribute> Attributes { get; set; }
         public List<IndexHeaderDir> Indexes { get; set; }
-        public NTFS NTFS { get; set; }
+        //public List<IndexHeader> Indexes { get; set; }
 
         public override string ToString()
         {
@@ -58,11 +58,12 @@ namespace CourseOSTask.WinAPI
         /// Конструктор
         /// </summary>
         /// <param name="sector">Запись МФТ в виде массива байт</param>
-        /// <param name="ntfs">Объектное представление файловой системы</param>
-        public MFTHandle(byte[] sector, NTFS ntfs)
+        /// <param name="disk">Объектное представление файловой системы</param>
+        public MFTHandle(byte[] sector, DiskInfo diskInfoHandle)
         {
-            NTFS = ntfs;
+            DiskInfo = diskInfoHandle;
             Indexes = new List<IndexHeaderDir>(); // пустой список индексных элементов
+            //Indexes = new List<IndexHeader>();
             Inner = sector;
             FillData(sector); // заполяем заголовок МФТ
             LoadAttributes(sector); // Считываем аттрибуты
@@ -85,7 +86,7 @@ namespace CourseOSTask.WinAPI
             {
                 if (Attribute.NonResidentFlg == 1) // Если аттрибут нерезидентный, то считываем его список отрезков и высчитываем адреса занимаемых кластеров
                 {
-                    int runListStart = offset + Attribute.NonResident.MappingPairOffset; // начало списка отрезков
+                    int runListStart = offset + Attribute.NotResidentAttr.MappingPairOffset; // начало списка отрезков
                     int currenrRunList = runListStart;
                     byte RunListCurrentByte = sector[currenrRunList];
                     byte NumByteInRunOffset = (byte)(RunListCurrentByte >> 4); // сколько байт отводится под адрес начального кластера
@@ -94,7 +95,7 @@ namespace CourseOSTask.WinAPI
                     int currentSeg = 0;
                     do
                     {
-                        LineSegment seg = new LineSegment(); // создаем новый отрезок
+                        Segment seg = new Segment(); // создаем новый отрезок
                         int segmentLength = 0;
                         for (int i = 0; i < NumByteInRunLen; i++)
                         {
@@ -110,12 +111,12 @@ namespace CourseOSTask.WinAPI
 
                         if (currentSeg != 0)
                         {
-                            seg.Start += Attribute.NonResident.Clusters[currentSeg - 1].Start; // высчитываем LCN начального кластера
+                            seg.Start += Attribute.NotResidentAttr.Clusters[currentSeg - 1].Start; // высчитываем LCN начального кластера
                         }
 
                         seg.End = seg.Start + (ulong)segmentLength; // высчитываем адрес конечного кластера отрезка
 
-                        Attribute.NonResident.Clusters.Add(seg);
+                        Attribute.NotResidentAttr.Clusters.Add(seg);
                         RunListCurrentByte = sector[currenrRunList];
                         // переходим к следующему отрезку
                         NumByteInRunOffset = (byte)(RunListCurrentByte >> 4);
@@ -139,7 +140,7 @@ namespace CourseOSTask.WinAPI
                 {
                     ParentDir = 0;
                     for (int i = 0; i < 6; i++)
-                        ParentDir += (ulong)sector[offset + Attribute.Resident.ValueOffset + i] << (i * 8);
+                        ParentDir += (ulong)sector[offset + Attribute.ResidentAttr.ValueOffset + i] << (i * 8);
 
                     byte[] chars = new byte[sector[offset + 0x58] * 2];
                     for (int i = 0; i < chars.Length; i += 2)
@@ -168,26 +169,26 @@ namespace CourseOSTask.WinAPI
             if (attr.Type != AttributeTypes.AT_INDEX_ALLOCATION)
                 throw new ArgumentException("Incorrect type of attribute");
 
-            var bpb = NTFS.BPB;
+            var bpb = DiskInfo.BPB;
             int bytePerCluster = bpb.BytePerSec * bpb.SectorPerCluster;
 
             List<IndexHeaderDir> indexes = new List<IndexHeaderDir>(); // список индексных элементов
-            for (int i = 0; i < attr.NonResident.Clusters.Count; i++) // перебираем все отрезки нерезидентного аттрибута
+            for (int i = 0; i < attr.NotResidentAttr.Clusters.Count; i++) // перебираем все отрезки нерезидентного аттрибута
             {
-                int curClus = (int)attr.NonResident.Clusters[i].Start; // текущий кластер
-                int clusters = (int)(attr.NonResident.Clusters[i].End - attr.NonResident.Clusters[i].Start); // количество кластеров в отрезке
+                int curClus = (int)attr.NotResidentAttr.Clusters[i].Start; // текущий кластер
+                int clusters = (int)(attr.NotResidentAttr.Clusters[i].End - attr.NotResidentAttr.Clusters[i].Start); // количество кластеров в отрезке
                 // читаем весь отрезок
                 byte[] run = new byte[clusters * (uint)bytePerCluster];
                 List<byte> list = new List<byte>();
                 for (int j = 0; j < clusters; j++)
                 {
-                    list.AddRange(NTFS.ReadCluster(curClus));
+                    list.AddRange(DiskInfo.ReadCluster(curClus));
                     curClus++;
                 }
 
                 run = list.ToArray();
 
-                int count = (int)(attr.NonResident.DataSize / mft.IndexBlockSize); // количество индексных
+                int count = (int)(attr.NotResidentAttr.DataSize / mft.IndexBlockSize); // количество индексных
                 for (int k = 0; k < count; k++) // перебираем индексные записи
                 {
                     int offset = (int)(0 + IndexBlockSize * k);
@@ -280,7 +281,8 @@ namespace CourseOSTask.WinAPI
         private List<IndexHeaderDir> IndexElements(byte[] sector, int offset, Attribute attr)
         {
             List<IndexHeaderDir> indexes = new List<IndexHeaderDir>();
-            int bodyOffset = attr.Resident.ValueOffset; // смещение до тела аттрибута
+            var fileIndexes = new List<IndexHeader>();
+            int bodyOffset = attr.ResidentAttr.ValueOffset; // смещение до тела аттрибута
             IndexRoot indexRoot = new IndexRoot(); // заголовок INDEX_ROOT
             for (int i = 0; i < 4; i++)
                 indexRoot.Type += (uint)sector[offset + bodyOffset + i] << (i * 8);
@@ -315,6 +317,8 @@ namespace CourseOSTask.WinAPI
 
             ulong firstIndexElement = 0x10 + indexHeader.EntriesOffset + (ulong)bodyOffset + (ulong)offset;
             ulong current = firstIndexElement;
+
+            fileIndexes.Add(indexHeader);
 
             IndexHeaderDir ind;
             do//считываем индексные элементы

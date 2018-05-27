@@ -9,16 +9,20 @@ namespace CourseOSTask.WinAPI
     public class IndexHeaderDir
     {
         /*0x00*/
-        public ulong IndexedFile { get; set; } //адрес MFT файла
+        //адрес MFT файла
+        public ulong IndexedFile { get; set; } 
         /*0x08*/
-        public ushort Length { get; set; } //смещение следующего элемента, относительно текущего
+        //смещение следующего элемента, относительно текущего
+        public ushort Length { get; set; }
         /*0x0A*/
-        public ushort KeyLength { get; set; } //длина атрибута $FILE_NAME
+        //длина атрибута $FILE_NAME
+        public ushort KeyLength { get; set; }
         /*0x0C*/
-        public int Flags { get; set; } //флаги
+        //флаги
+        public int Flags { get; set; }
         /*0x10*/
-        public byte[] FileName { get; set; }//сам атрибут $FILE_NAME, если key_length 
-                                            //больше нуля
+        //сам атрибут $FILE_NAME, если key_length больше нуля
+        public byte[] FileName { get; set; }
         public string FileNameString { get; set; }
     }
 }

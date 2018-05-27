@@ -9,17 +9,23 @@ namespace CourseOSTask.WinAPI
     public class IndexRoot
     {
         /*0x00*/
-        public uint Type { get; set; }//тип индексируемого атрибута
+        //тип индексируемого атрибута
+        public uint Type { get; set; }
         /*0x04*/
-        public uint CollarationRule { get; set; } //правило упорядочения в дереве
+        //правило упорядочения в дереве
+        public uint CollarationRule { get; set; }
         /*0x08*/
-        public uint IndexBlockSize { get; set; } //размер индексной записи в байтах 
+        //размер индексной записи в байтах 
+        public uint IndexBlockSize { get; set; }
         /*0x0C*/
-        public byte ClustersPerIndexBlock { get; set; }//size of each index block (record) in clusters 
-                                                       //либо логарифм размера
-                                                       /*0x0D*/
-        public byte[] Reserved { get; set; } //unused
+        //size of each index block (record) in clusters 
+        public byte ClustersPerIndexBlock { get; set; }
+
+        /*0x0D*/
+        //unused
+        public byte[] Reserved { get; set; }
         /*0x10*/
-        public IndexHeader Index { get; set; } //заголовок индексного узла
+        //заголовок индексного узла
+        public IndexHeader Index { get; set; } 
     }
 }
