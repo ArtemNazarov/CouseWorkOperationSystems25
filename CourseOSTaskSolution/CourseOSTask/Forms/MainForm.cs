@@ -170,7 +170,7 @@ namespace CourseOSTask
             }
             //создание и запуск потока анализа файла
             var analyzeFileGroupThread = new Thread(AnalyzeFileGroupThread);
-            analyzeFileGroupThread.Start();
+            analyzeFileGroupThread.Start(files);
         }
 
         private void AnalyzeFileGroupThread(object filesobj)

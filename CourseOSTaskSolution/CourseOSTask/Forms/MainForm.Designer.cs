@@ -431,7 +431,7 @@
             this.справкаToolStripMenuItem});
             this.справкаToolStripMenuItem1.Name = "справкаToolStripMenuItem1";
             this.справкаToolStripMenuItem1.Size = new System.Drawing.Size(79, 22);
-            this.справкаToolStripMenuItem1.Text = "Спра&вка";
+            this.справкаToolStripMenuItem1.Text = "Помощь";
             // 
             // toolStripSeparator11
             // 
