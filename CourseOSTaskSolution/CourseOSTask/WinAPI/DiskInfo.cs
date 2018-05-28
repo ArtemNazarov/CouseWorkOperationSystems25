@@ -10,30 +10,18 @@ namespace CourseOSTask.WinAPI
 {
     public class DiskInfo
     {
-        /// <summary>
-        /// Представление диска как файла для прямого чтения
-        /// </summary>
+
         public SafeFileHandle Drive { get; set; }
 
-        /// <summary>
-        /// Объектное представление блока параметров биос
-        /// </summary>
         public BPB BPB { get; set; }
 
-        /// <summary>
-        /// Запись МФТ, описывающая саму МФТ
-        /// </summary>
         public MFTHandle MFT { get; set; }
 
-        /// <summary>
-        /// Конструктор
-        /// </summary>
-        /// <param name="drive">Имя логического диска в формате C:</param>
         public DiskInfo(string drive)
         {
             drive = "\\\\.\\" + drive;
 
-            // Создаем файл для чтения с диска
+            // Создание дескриптора файла для чтения с диска
             Drive = HandleDriveAPI.CreateFile(
                 drive,
                 HandleDriveAPI.GENERIC_READ,
@@ -47,19 +35,16 @@ namespace CourseOSTask.WinAPI
             {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             }
-            BPB = new BPB(Drive); // считываем блок параметров БИОС
-            MFT = GetFirstMFT();// считываем первую запись МФТ
+            // считываем блок параметров БИОС
+            BPB = new BPB(Drive);
+            // считываем первую запись МФТ
+            MFT = GetFirstMFT();
         }
 
 
-        /// <summary>
-        /// Чтение произвольного сектора с диска
-        /// </summary>
-        /// <param name="sectorNum">Номер сектора</param>
-        /// <returns>Массив байт размером BPB.BYTE_IN_SECTOR</returns>
         private unsafe byte[] _ReadSector(int sectorNum)
         {
-            byte[] bytes = new byte[Constants.BYTE_IN_SECTOR]; // сектор в виде одномерного массива байтов
+            byte[] bytes = new byte[Constants.BYTE_IN_SECTOR]; 
             IntPtr BytesRead = IntPtr.Zero;
             ulong pointer = (ulong)sectorNum * (ulong)Constants.BYTE_IN_SECTOR;
             int hight = (int)(pointer >> 32);
@@ -75,11 +60,6 @@ namespace CourseOSTask.WinAPI
             return bytes;
         }
 
-        /// <summary>
-        /// Чтение произвольного сектора диска с проверкой
-        /// </summary>
-        /// <param name="num">Номер сектора</param>
-        /// <returns>Сектор диска в виде массива байт</returns>
         public byte[] ReadSector(int num)
         {
             if ((ulong)num >= BPB.SecCount)
@@ -88,11 +68,6 @@ namespace CourseOSTask.WinAPI
             return _ReadSector(num);
         }
 
-        /// <summary>
-        /// Преобразование массива байт в HEX форму
-        /// </summary>
-        /// <param name="sector">Массив байт</param>
-        /// <returns>Сектор диска в виде массива строк</returns>
         public string[] SectorToHex(byte[] sector)
         {
             string[] SectorHex = new string[sector.Length];
@@ -103,11 +78,6 @@ namespace CourseOSTask.WinAPI
             return SectorHex;
         }
 
-        /// <summary>
-        /// Чтение сектора по номеру кластера
-        /// </summary>
-        /// <param name="num">Номер кластера</param>
-        /// <returns>Сектор диска в виде массива байт</returns>
         public byte[] ReadSectorByClusterNum(int num)
         {
             int sectorNum = num * BPB.SectorPerCluster;//* 8;
@@ -119,11 +89,6 @@ namespace CourseOSTask.WinAPI
             return _ReadSector(sectorNum);
         }
 
-        /// <summary>
-        /// Чтение произвольного кластера диска
-        /// </summary>
-        /// <param name="cluster">Номер кластера</param>
-        /// <returns>Кластер диска в виде массива байт</returns>
         public byte[] ReadCluster(int cluster)
         {
             byte[] ByteRecord = new byte[BPB.SectorPerCluster * BPB.BytePerSec];
@@ -135,11 +100,6 @@ namespace CourseOSTask.WinAPI
             return ByteRecord;
         }
 
-
-        /// <summary>
-        /// Чтение первой записи МФТ
-        /// </summary>
-        /// <returns>Возвращает объектное представление первой записи МФТ</returns>
         public MFTHandle GetFirstMFT()
         {
             byte[] ByteRecord = new byte[(int)Math.Pow(2, BPB.ClustersPerMFT * -1)]; // массив байт, совпадающий размером с записью в МФТ, вычисляется с помощью BPB.ClustersPerMFT
@@ -151,16 +111,12 @@ namespace CourseOSTask.WinAPI
             return new MFTHandle(ByteRecord, this);
         }
 
-        /// <summary>
-        /// Чтение произвольной записи МФТ
-        /// </summary>
-        /// <param name="indexMFT">Номер записи МФТ</param>
-        /// <returns>Возвращает объектное представление записи МФТ</returns>
         public MFTHandle GetMftRecord(int indexMFT)
         {
             int mftSize = (int)Math.Pow(2, BPB.ClustersPerMFT * -1);
             int recordInCluster = BPB.SectorPerCluster * BPB.BytePerSec / mftSize;
-            int sector = FindSector(indexMFT); // Поиск номера первого сектора записи МФТ, необходимо потому, что сама МФТ может быть фрагментирована
+            // Поиск номера первого сектора записи МФТ, нужна, так как возможна фрагментация МФТ 
+            int sector = FindSector(indexMFT); 
 
             byte[] ByteRecord = new byte[mftSize];
             for (int i = 0; i < ByteRecord.Length / 512; i++)
@@ -172,11 +128,6 @@ namespace CourseOSTask.WinAPI
         }
 
 
-        /// <summary>
-        /// Поиск номера первого сектора записи МФТ
-        /// </summary>
-        /// <param name="IndexMFT">Номер записи МФТ</param>
-        /// <returns>Номер первого сектора записи МФТ</returns>
         private int FindSector(int IndexMFT)
         {
             // Размер записи МФТ

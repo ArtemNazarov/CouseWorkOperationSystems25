@@ -47,9 +47,6 @@ namespace CourseOSTask
             if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(chooseFolderDialog.SelectedPath))
             {
                 pathField.Text = chooseFolderDialog.SelectedPath;
-                string[] files = Directory.GetFiles(pathField.Text);
-
-                //System.Windows.Forms.MessageBox.Show("Files found: " + files.Length.ToString(), "Message");
             }
         }
         private class MyRenderer : ToolStripProfessionalRenderer
@@ -99,8 +96,6 @@ namespace CourseOSTask
         private void MainForm_Load(object sender, EventArgs e)
         {
             drivesBox.DataSource = Drives;
-            pathField.Text = @"J:\dev\check";
-            //chosenFilesBox.
         }
 
         private void copyStructure_Click(object sender, EventArgs e)
@@ -161,7 +156,6 @@ namespace CourseOSTask
                 {
                     chosenFilesBox.Items.Add(item);
                 }
-                //System.Windows.Forms.MessageBox.Show("Files found: " + files.Length.ToString(), "Message");
             }
 
         }
@@ -169,37 +163,90 @@ namespace CourseOSTask
         private void materialRaisedButton1_Click(object sender, EventArgs e)
         {
             var files = new List<string>();
-            var mftViewTable = new List<TableView>();
-
+            //чтение путей файлов, добавленных в ListBox
             foreach (var item in chosenFilesBox.Items)
             {
                 files.Add(item.ToString());
             }
+            //создание и запуск потока анализа файла
+            var analyzeFileGroupThread = new Thread(AnalyzeFileGroupThread);
+            analyzeFileGroupThread.Start();
+        }
 
-            foreach (var file in files)
+        private void AnalyzeFileGroupThread(object filesobj)
+        {
+            var files = (List<string>)filesobj;
+            var mftViewTable = new List<TableView>();
+
+            if (files.Count == 0)
             {
-                var catalogs = file.Split(new [] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);//Разбиваем полный путь на имена каталогов)
-                DiskInfo diskHandle = new DiskInfo(catalogs[0]);
-                int nextRecord = 5; // 5 запись -- корневой каталог, поиск начинаем с него
-                MFTHandle root; // переменная для хранения текущего каталога
-                for (int i = 1; i < catalogs.Length; i++)
+                MessageBox.Show("Вы не выбрали ни одного файла!");
+            }
+            else
+            {
+                foreach (var file in files)
                 {
-                    root = diskHandle.GetMftRecord(nextRecord); // читаем следующую запись МФТ со всеми аттрибутами, включая INDEX_ROOT и INDEX_ALLOCATION
-                    nextRecord = DiskInfo.FoundSubdir(root, catalogs[i]); // Ищем номер записи МФТ следующего каталога
+                    //разбиваем путьк файлу на каталоги
+                    var catalogs = file.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+                    DiskInfo diskHandle = new DiskInfo(catalogs[0]);
+                    // 5 запись является корневым каталогом, обращаемся к ней при старте поиска
+                    int nextRecord = 5;
+                    // в объявленной переменной хранится текущий каталог
+                    MFTHandle root; 
+                    for (int i = 1; i < catalogs.Length; i++)
+                    {
+                        // считывание следующей записи MFT
+                        root = diskHandle.GetMftRecord(nextRecord);
+                        // поиск номера записи МФТ следующего каталога
+                        nextRecord = DiskInfo.FoundSubdir(root, catalogs[i]); 
+                    }
+
+                    MFTHandle detectedFile = diskHandle.GetMftRecord(nextRecord);
+
+                    mftViewTable.Add(new TableView(detectedFile)); 
+                    foreach (var index in detectedFile.Indexes)
+                    {
+                        mftViewTable.Add(new TableView(diskHandle.GetMftRecord((int)index.IndexedFile))); 
+                    }
                 }
 
-                MFTHandle detectedFile = diskHandle.GetMftRecord(nextRecord);
+                AnalyzeDataView.DataSource = null;
+                // вывод данных в таблицу на форме
+                AnalyzeDataView.DataSource = mftViewTable;
+            }
+        }
 
-                mftViewTable.Add(new TableView(detectedFile)); // Первым отображается запись самого каталога
-                foreach (var index in detectedFile.Indexes)
+        private void saveAnalyzeResults_Click(object sender, EventArgs e)
+        {
+            if (AnalyzeDataView.DataSource != null)
+            {
+                var data = (List<string>)AnalyzeDataView.DataSource;
+                if (data.Count != 0)
                 {
-                    mftViewTable.Add(new TableView(diskHandle.GetMftRecord((int)index.IndexedFile))); // добавляем в отображаемые записи сведения о файле в каталоге
+                    var result = saveFileDialog.ShowDialog();
+                    if (result == DialogResult.OK)
+                    {
+                        //StreamWriter sw = new StreamWriter();
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Таблица не содержит элементов!");
                 }
             }
+            else
+            {
+                MessageBox.Show("Таблица не содержит элементов!");
+            }
+        }
 
-            dataGridView1.DataSource = null;
-            // выводим данные в таблицу
-            dataGridView1.DataSource = mftViewTable;
+        private void опрограммеToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("NTFS2Threads (C) 1.0 By Danilov Ilya");
+        }
+
+        private void справкаToolStripMenuItem_Click(object sender, EventArgs e)
+        {
 
         }
     }

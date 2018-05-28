@@ -21,7 +21,6 @@ namespace CourseOSTask.WinAPI
         //флаги
         public int Flags { get; set; }
         /*0x10*/
-        //сам атрибут $FILE_NAME, если key_length больше нуля
         public byte[] FileName { get; set; }
         public string FileNameString { get; set; }
     }
