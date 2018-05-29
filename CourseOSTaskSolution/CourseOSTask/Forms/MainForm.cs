@@ -96,15 +96,22 @@ namespace CourseOSTask
         private void MainForm_Load(object sender, EventArgs e)
         {
             drivesBox.DataSource = Drives;
+            //pathField.
         }
 
         private void copyStructure_Click(object sender, EventArgs e)
         {
             var drive = drivesBox.SelectedValue.ToString();
             string neededPath = pathField.Text;
+            var np = neededPath.ToCharArray()[0] + ":\\";
             if (String.IsNullOrEmpty(neededPath))
             {
                 MessageBox.Show("Выберите каталог, который хотите скопировать!");
+                return;
+            }
+            if (np.Equals(drive))
+            {
+                MessageBox.Show("Вы выбрали диск, с которого хотите скопировать!");
                 return;
             }
             var ci = new CopyInfo
@@ -123,7 +130,7 @@ namespace CourseOSTask
             var neededPath = copyInfo.NeededPath;
             string drive = "\\\\.\\" + copyInfo.SelectedDrive;
             drive = drive.Remove(drive.Length - 1, 1);
-
+            
             DiskInfo diskInfoHandle = new DiskInfo(drive);
             var bpb = diskInfoHandle.BPB;
             if (bpb.Signature != "NTFS    ")
@@ -248,6 +255,20 @@ namespace CourseOSTask
         private void справкаToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void materialFlatButton1_Click(object sender, EventArgs e)
+        {
+            var result = openFileDialog.ShowDialog();
+            chosenFilesBox.Items.Clear();
+            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(openFileDialog.SafeFileName))
+            {
+                var files = openFileDialog.FileNames;
+                foreach (var item in files)
+                {
+                    chosenFilesBox.Items.Add(item);
+                }
+            }
         }
     }
 }

@@ -146,7 +146,7 @@ namespace CourseOSTask.WinAPI
             {
                 minRec = prevMax; // Максимальный номер записи МФТ в предыдущем отрезке (0 для первого отрезка), является минимальным номером записи в текущем отрезке
                 maxRec = (int)(data.NotResidentAttr.Clusters[i].End - data.NotResidentAttr.Clusters[i].Start) * recordInCluster + prevMax;  // Максимальный номер записи МФТ в текущем отрезке
-                // Если запись номер записи МФТ попадает в текущий отрезок, то запоминаем номер отрезка
+                // Если номер записи МФТ попадает в текущий отрезок, то запоминаем номер отрезка
                 if (IndexMFT < maxRec) 
                 {
                     run = i;
