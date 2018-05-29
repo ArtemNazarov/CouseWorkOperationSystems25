@@ -31,12 +31,14 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.materialTabControl1 = new MaterialSkin.Controls.MaterialTabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.pathField = new MaterialSkin.Controls.MaterialSingleLineTextField();
             this.chooseCatalogButton = new MaterialSkin.Controls.MaterialFlatButton();
             this.copyStructure = new MaterialSkin.Controls.MaterialRaisedButton();
             this.drivesBox = new System.Windows.Forms.ComboBox();
             this.materialLabel1 = new MaterialSkin.Controls.MaterialLabel();
             this.pathLabel = new MaterialSkin.Controls.MaterialLabel();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.chooseFilesButton = new MaterialSkin.Controls.MaterialFlatButton();
             this.AnalyzeDataView = new System.Windows.Forms.DataGridView();
             this.analyzeMFTButton = new MaterialSkin.Controls.MaterialRaisedButton();
             this.materialLabel3 = new MaterialSkin.Controls.MaterialLabel();
@@ -52,19 +54,13 @@
             this.chooseFolderDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.MainMenu = new System.Windows.Forms.MenuStrip();
             this.файлToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.closeToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.справкаToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.опрограммеToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.справкаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.helpProvider1 = new System.Windows.Forms.HelpProvider();
-            this.chooseFilesButton = new MaterialSkin.Controls.MaterialFlatButton();
-            this.pathField = new MaterialSkin.Controls.MaterialSingleLineTextField();
             this.materialTabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -104,6 +100,24 @@
             this.tabPage1.Size = new System.Drawing.Size(1062, 656);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Задание 1";
+            // 
+            // pathField
+            // 
+            this.pathField.Depth = 0;
+            this.pathField.Enabled = false;
+            this.pathField.Hint = "";
+            this.pathField.Location = new System.Drawing.Point(25, 71);
+            this.pathField.MaxLength = 32767;
+            this.pathField.MouseState = MaterialSkin.MouseState.HOVER;
+            this.pathField.Name = "pathField";
+            this.pathField.PasswordChar = '\0';
+            this.pathField.SelectedText = "";
+            this.pathField.SelectionLength = 0;
+            this.pathField.SelectionStart = 0;
+            this.pathField.Size = new System.Drawing.Size(731, 28);
+            this.pathField.TabIndex = 13;
+            this.pathField.TabStop = false;
+            this.pathField.UseSystemPasswordChar = false;
             // 
             // chooseCatalogButton
             // 
@@ -200,6 +214,23 @@
             this.tabPage2.Size = new System.Drawing.Size(1062, 656);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Задание 2";
+            // 
+            // chooseFilesButton
+            // 
+            this.chooseFilesButton.AutoSize = true;
+            this.chooseFilesButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.chooseFilesButton.Depth = 0;
+            this.chooseFilesButton.Icon = null;
+            this.chooseFilesButton.Location = new System.Drawing.Point(431, 21);
+            this.chooseFilesButton.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
+            this.chooseFilesButton.MouseState = MaterialSkin.MouseState.HOVER;
+            this.chooseFilesButton.Name = "chooseFilesButton";
+            this.chooseFilesButton.Primary = false;
+            this.chooseFilesButton.Size = new System.Drawing.Size(117, 36);
+            this.chooseFilesButton.TabIndex = 6;
+            this.chooseFilesButton.Text = "Выбрать...";
+            this.chooseFilesButton.UseVisualStyleBackColor = true;
+            this.chooseFilesButton.Click += new System.EventHandler(this.materialFlatButton1_Click);
             // 
             // AnalyzeDataView
             // 
@@ -352,55 +383,31 @@
             // файлToolStripMenuItem1
             // 
             this.файлToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripSeparator6,
-            this.toolStripSeparator7,
-            this.toolStripSeparator8,
             this.closeToolStripMenuItem1});
             this.файлToolStripMenuItem1.Name = "файлToolStripMenuItem1";
             this.файлToolStripMenuItem1.Size = new System.Drawing.Size(58, 22);
             this.файлToolStripMenuItem1.Text = "&Файл";
             // 
-            // toolStripSeparator6
-            // 
-            this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(125, 6);
-            // 
-            // toolStripSeparator7
-            // 
-            this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(125, 6);
-            // 
-            // toolStripSeparator8
-            // 
-            this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(125, 6);
-            // 
             // closeToolStripMenuItem1
             // 
             this.closeToolStripMenuItem1.Name = "closeToolStripMenuItem1";
-            this.closeToolStripMenuItem1.Size = new System.Drawing.Size(128, 26);
+            this.closeToolStripMenuItem1.Size = new System.Drawing.Size(216, 26);
             this.closeToolStripMenuItem1.Text = "Вы&ход";
             this.closeToolStripMenuItem1.Click += new System.EventHandler(this.closeToolStripMenuItem1_Click);
             // 
             // справкаToolStripMenuItem1
             // 
             this.справкаToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripSeparator11,
             this.опрограммеToolStripMenuItem1,
             this.справкаToolStripMenuItem});
             this.справкаToolStripMenuItem1.Name = "справкаToolStripMenuItem1";
             this.справкаToolStripMenuItem1.Size = new System.Drawing.Size(79, 22);
             this.справкаToolStripMenuItem1.Text = "Помощь";
             // 
-            // toolStripSeparator11
-            // 
-            this.toolStripSeparator11.Name = "toolStripSeparator11";
-            this.toolStripSeparator11.Size = new System.Drawing.Size(184, 6);
-            // 
             // опрограммеToolStripMenuItem1
             // 
             this.опрограммеToolStripMenuItem1.Name = "опрограммеToolStripMenuItem1";
-            this.опрограммеToolStripMenuItem1.Size = new System.Drawing.Size(187, 26);
+            this.опрограммеToolStripMenuItem1.Size = new System.Drawing.Size(216, 26);
             this.опрограммеToolStripMenuItem1.Text = "&О программе...";
             this.опрограммеToolStripMenuItem1.Click += new System.EventHandler(this.опрограммеToolStripMenuItem1_Click);
             // 
@@ -409,7 +416,7 @@
             this.справкаToolStripMenuItem.Name = "справкаToolStripMenuItem";
             this.справкаToolStripMenuItem.ShortcutKeyDisplayString = "F1";
             this.справкаToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F1;
-            this.справкаToolStripMenuItem.Size = new System.Drawing.Size(187, 26);
+            this.справкаToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
             this.справкаToolStripMenuItem.Text = "Справка";
             this.справкаToolStripMenuItem.Click += new System.EventHandler(this.справкаToolStripMenuItem_Click);
             // 
@@ -424,41 +431,6 @@
             this.saveFileDialog.Filter = "Csv file|*.csv";
             this.saveFileDialog.InitialDirectory = "~";
             this.saveFileDialog.Title = "Сохранение файла данных";
-            // 
-            // chooseFilesButton
-            // 
-            this.chooseFilesButton.AutoSize = true;
-            this.chooseFilesButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.chooseFilesButton.Depth = 0;
-            this.chooseFilesButton.Icon = null;
-            this.chooseFilesButton.Location = new System.Drawing.Point(431, 21);
-            this.chooseFilesButton.Margin = new System.Windows.Forms.Padding(4, 6, 4, 6);
-            this.chooseFilesButton.MouseState = MaterialSkin.MouseState.HOVER;
-            this.chooseFilesButton.Name = "chooseFilesButton";
-            this.chooseFilesButton.Primary = false;
-            this.chooseFilesButton.Size = new System.Drawing.Size(117, 36);
-            this.chooseFilesButton.TabIndex = 6;
-            this.chooseFilesButton.Text = "Выбрать...";
-            this.chooseFilesButton.UseVisualStyleBackColor = true;
-            this.chooseFilesButton.Click += new System.EventHandler(this.materialFlatButton1_Click);
-            // 
-            // pathField
-            // 
-            this.pathField.Depth = 0;
-            this.pathField.Enabled = false;
-            this.pathField.Hint = "";
-            this.pathField.Location = new System.Drawing.Point(25, 71);
-            this.pathField.MaxLength = 32767;
-            this.pathField.MouseState = MaterialSkin.MouseState.HOVER;
-            this.pathField.Name = "pathField";
-            this.pathField.PasswordChar = '\0';
-            this.pathField.SelectedText = "";
-            this.pathField.SelectionLength = 0;
-            this.pathField.SelectionStart = 0;
-            this.pathField.Size = new System.Drawing.Size(731, 28);
-            this.pathField.TabIndex = 13;
-            this.pathField.TabStop = false;
-            this.pathField.UseSystemPasswordChar = false;
             // 
             // MainForm
             // 
@@ -506,12 +478,8 @@
         private MaterialSkin.Controls.MaterialRaisedButton copyStructure;
         private System.Windows.Forms.MenuStrip MainMenu;
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem справкаToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.ToolStripMenuItem опрограммеToolStripMenuItem1;
         private MaterialSkin.Controls.MaterialLabel materialLabel2;
         private System.Windows.Forms.OpenFileDialog openFileDialog;

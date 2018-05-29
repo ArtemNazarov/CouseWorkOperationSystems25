@@ -7,7 +7,7 @@
     <ProjectGuid>{250DC18D-048C-42A7-BFF1-C3C1C351C76E}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>CourseOSTask</RootNamespace>
-    <AssemblyName>CourseOSTask</AssemblyName>
+    <AssemblyName>NTFS2Threads</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

@@ -17,10 +17,12 @@ namespace CourseOSTask.WinAPI
 
         public MFTHandle MFT { get; set; }
 
+        public bool NotNTFSFlag { get; set; }
+
         public DiskInfo(string drive)
         {
             drive = "\\\\.\\" + drive;
-
+            NotNTFSFlag = false;
             // Создание дескриптора файла для чтения с диска
             Drive = HandleDriveAPI.CreateFile(
                 drive,
@@ -37,8 +39,15 @@ namespace CourseOSTask.WinAPI
             }
             // считываем блок параметров БИОС
             BPB = new BPB(Drive);
-            // считываем первую запись МФТ
-            MFT = GetFirstMFT();
+            if (BPB.Signature != "NTFS    ")
+            {
+                NotNTFSFlag = true;
+            }
+            else
+            {
+                // считываем первую запись МФТ
+                MFT = GetFirstMFT();
+            }
         }
 
 

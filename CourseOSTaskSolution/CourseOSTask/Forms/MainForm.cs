@@ -15,6 +15,7 @@ using System.Windows.Forms;
 using CourseOSTask.WinAPI;
 using Microsoft.Win32.SafeHandles;
 using static CourseOSTask.HandleDriveAPI;
+using System.Diagnostics;
 
 namespace CourseOSTask
 {
@@ -103,12 +104,12 @@ namespace CourseOSTask
         {
             var drive = drivesBox.SelectedValue.ToString();
             string neededPath = pathField.Text;
-            var np = neededPath.ToCharArray()[0] + ":\\";
             if (String.IsNullOrEmpty(neededPath))
             {
                 MessageBox.Show("Выберите каталог, который хотите скопировать!");
                 return;
             }
+            var np = neededPath.ToCharArray()[0] + ":\\";
             if (np.Equals(drive))
             {
                 MessageBox.Show("Вы выбрали диск, с которого хотите скопировать!");
@@ -132,8 +133,7 @@ namespace CourseOSTask
             drive = drive.Remove(drive.Length - 1, 1);
             
             DiskInfo diskInfoHandle = new DiskInfo(drive);
-            var bpb = diskInfoHandle.BPB;
-            if (bpb.Signature != "NTFS    ")
+            if (diskInfoHandle.NotNTFSFlag)
             {
                 MessageBox.Show("Данный раздел не является томом NTFS");
             }
@@ -143,7 +143,7 @@ namespace CourseOSTask
                 np[0] = drive[4];
                 string toPath = new string(np);
                 copyInfo.CopyDirs(neededPath, toPath);
-                MessageBox.Show("Структура каталогов успешно скопирована!");
+                MessageBox.Show("Каталог успешно скопирован!");
             }
         }
 
@@ -196,25 +196,33 @@ namespace CourseOSTask
                     //разбиваем путьк файлу на каталоги
                     var catalogs = file.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
                     DiskInfo diskHandle = new DiskInfo(catalogs[0]);
-                    // 5 запись является корневым каталогом, обращаемся к ней при старте поиска
-                    int nextRecord = 5;
-                    // в объявленной переменной хранится текущий каталог
-                    MFTHandle root; 
-                    for (int i = 1; i < catalogs.Length; i++)
+                    if (!diskHandle.NotNTFSFlag)
                     {
-                        // считывание следующей записи MFT
-                        root = diskHandle.GetMftRecord(nextRecord);
-                        // поиск номера записи МФТ следующего каталога
-                        nextRecord = DiskInfo.FoundSubdir(root, catalogs[i]); 
+                        // 5 запись является корневым каталогом, обращаемся к ней при старте поиска
+                        int nextRecord = 5;
+                        // в объявленной переменной хранится текущий каталог
+                        MFTHandle root;
+                        for (int i = 1; i < catalogs.Length; i++)
+                        {
+                            // считывание следующей записи MFT
+                            root = diskHandle.GetMftRecord(nextRecord);
+                            // поиск номера записи МФТ следующего каталога
+                            nextRecord = DiskInfo.FoundSubdir(root, catalogs[i]);
+                        }
+
+                        MFTHandle detectedFile = diskHandle.GetMftRecord(nextRecord);
+
+                        mftViewTable.Add(new TableView(detectedFile));
+                        foreach (var index in detectedFile.Indexes)
+                        {
+                            mftViewTable.Add(new TableView(diskHandle.GetMftRecord((int)index.IndexedFile)));
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Файл {file} находится на диске, не являющимся томом NTFS");
                     }
 
-                    MFTHandle detectedFile = diskHandle.GetMftRecord(nextRecord);
-
-                    mftViewTable.Add(new TableView(detectedFile)); 
-                    foreach (var index in detectedFile.Indexes)
-                    {
-                        mftViewTable.Add(new TableView(diskHandle.GetMftRecord((int)index.IndexedFile))); 
-                    }
                 }
 
                 AnalyzeDataView.DataSource = null;
@@ -254,7 +262,7 @@ namespace CourseOSTask
 
         private void справкаToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            Process.Start("NTFS2Threads.chm");
         }
 
         private void materialFlatButton1_Click(object sender, EventArgs e)
