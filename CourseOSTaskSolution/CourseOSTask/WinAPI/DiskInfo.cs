@@ -144,7 +144,7 @@ namespace CourseOSTask.WinAPI
             // Подсчет количества записей МФТ в одном кластере
             int recordInCluster = BPB.SectorPerCluster * BPB.BytePerSec / mftSize;
             // из аттрибутов первой записи МФТ выбираем аттрибут DATA
-            Attribute data = MFT.Attributes.Where(n => n.Type == AttributeTypes.AT_DATA).FirstOrDefault(); 
+            Attribute data = MFT.Attributes.Where(n => n.Type == AttrDef.AT_DATA).FirstOrDefault(); 
             int prevMin = 0;
             int prevMax = 0;
             int maxRec = 0;

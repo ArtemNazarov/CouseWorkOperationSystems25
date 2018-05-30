@@ -9,7 +9,7 @@ namespace CourseOSTask.WinAPI
     public class Attribute
     {
         /*0x00*/
-        public AttributeTypes Type { get; } //тип атрибута
+        public AttrDef Type { get; } //тип атрибута
         /*0x04*/
         public ushort Length { get; } //длина заголовка используется для перехода к следующему   атрибуту
         /*0x06*/
@@ -35,8 +35,8 @@ namespace CourseOSTask.WinAPI
             for (int i = 0; i < 4; i++)
                 t += sector[offset + i] << (i * 8);
 
-            Type = (AttributeTypes)t;
-            if (Type != AttributeTypes.AT_END)
+            Type = (AttrDef)t;
+            if (Type != AttrDef.AT_END)
             {
                 Length = 0;
                 for (int i = 0; i < 2; i++)

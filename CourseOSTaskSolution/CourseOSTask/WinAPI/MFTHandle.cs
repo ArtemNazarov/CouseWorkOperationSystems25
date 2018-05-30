@@ -71,7 +71,7 @@ namespace CourseOSTask.WinAPI
             Attributes.Add(Attribute); //сохранение в списке аттрибутов
             if (Signature != "FILE") 
                 return;
-            while (Attribute.Type != AttributeTypes.AT_END) 
+            while (Attribute.Type != AttrDef.AT_END) 
             {
                 // Если аттрибут нерезидентный, то считываем его список отрезков и высчитываем адреса занимаемых кластеров
                 if (Attribute.NonResidentFlg == 1) 
@@ -118,17 +118,17 @@ namespace CourseOSTask.WinAPI
                     } while (RunListCurrentByte != 0); // пока не закончится список отрезков
                 }
                 // если аттрибут INDEX_ROOT, то считываем индексные элементы
-                if (Attribute.Type == AttributeTypes.AT_INDEX_ROOT && FileName != "$Secure") 
+                if (Attribute.Type == AttrDef.AT_INDEX_ROOT && FileName != "$Secure") 
                 {
                     Indexes.AddRange(IndexElements(sector, offset, Attribute));
                 }
                 // если аттрибут INDEX_ALLOCATIOB, то считываем индексные записи из списка отрезков, и читаем из них индексные элементы
-                if (Attribute.Type == AttributeTypes.AT_INDEX_ALLOCATION && FileName != "$Secure") 
+                if (Attribute.Type == AttrDef.AT_INDEX_ALLOCATION && FileName != "$Secure") 
                 {
                     Indexes.AddRange(IndexAllocationElements(this, Attribute));
                 }
                 // если аттрибут FILE_NAME, то читаем имя файла
-                if (Attribute.Type == AttributeTypes.AT_FILE_NAME) 
+                if (Attribute.Type == AttrDef.AT_FILE_NAME) 
                 {
                     ParentDir = 0;
                     for (int i = 0; i < 6; i++)
@@ -152,7 +152,7 @@ namespace CourseOSTask.WinAPI
 
         public List<IndexHeaderDir> IndexAllocationElements(MFTHandle mft, Attribute attr)
         {
-            if (attr.Type != AttributeTypes.AT_INDEX_ALLOCATION)
+            if (attr.Type != AttrDef.AT_INDEX_ALLOCATION)
                 throw new ArgumentException("Incorrect type of attribute");
 
             var bpb = DiskInfo.BPB;

@@ -1,21 +1,13 @@
-﻿using MaterialSkin;
+﻿using CourseOSTask.WinAPI;
+using MaterialSkin;
 using MaterialSkin.Controls;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using CourseOSTask.WinAPI;
-using Microsoft.Win32.SafeHandles;
-using static CourseOSTask.HandleDriveAPI;
-using System.Diagnostics;
 
 namespace CourseOSTask
 {
@@ -23,7 +15,9 @@ namespace CourseOSTask
     {
         private string[] Drives { get; set; }
 
-
+        /// <summary>
+        /// Инициализация формы, её стилей, цветов и компонентов
+        /// </summary>
         public MainForm()
         {
             InitializeComponent();
@@ -40,21 +34,29 @@ namespace CourseOSTask
             Drives = Environment.GetLogicalDrives();
         }
 
-
-
+        /// <summary>
+        /// Выбор каталога для копирования
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void chooseCatalogButton_Click(object sender, EventArgs e)
         {
+            
             var result = chooseFolderDialog.ShowDialog();
             if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(chooseFolderDialog.SelectedPath))
             {
                 pathField.Text = chooseFolderDialog.SelectedPath;
             }
         }
+
         private class MyRenderer : ToolStripProfessionalRenderer
         {
             public MyRenderer() : base(new MyColors()) { }
         }
 
+        /// <summary>
+        /// Изменение стандартных цветов компонентов формы windows
+        /// </summary>
         private class MyColors : ProfessionalColorTable
         {
             private MaterialSkinManager materialSkinManager = MaterialSkinManager.Instance;
@@ -94,27 +96,39 @@ namespace CourseOSTask
             }
         }
 
+        /// <summary>
+        /// Обработка события загрузки формы
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MainForm_Load(object sender, EventArgs e)
         {
             drivesBox.DataSource = Drives;
-            //pathField.
         }
 
+        /// <summary>
+        /// Обработчик события нажатия на кнопку Копировать
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void copyStructure_Click(object sender, EventArgs e)
         {
             var drive = drivesBox.SelectedValue.ToString();
             string neededPath = pathField.Text;
+            //если пользователь не выбрал каталог
             if (String.IsNullOrEmpty(neededPath))
             {
-                MessageBox.Show("Выберите каталог, который хотите скопировать!");
+                MessageBox.Show("Выберите каталог, который хотите скопировать!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
             var np = neededPath.ToCharArray()[0] + ":\\";
+            //если выбранный диск и диск с каталогом совпадают
             if (np.Equals(drive))
             {
-                MessageBox.Show("Вы выбрали диск, с которого хотите скопировать!");
+                MessageBox.Show("Вы выбрали диск, с которого хотите скопировать!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+            //формирование объекта с информацией о выбранном каталоге и выбранном диске
             var ci = new CopyInfo
             {
                 NeededPath = neededPath,
@@ -125,25 +139,31 @@ namespace CourseOSTask
             copyStructureThread.Start(ci);
         }
 
+        /// <summary>
+        /// Поток копирования каталога
+        /// </summary>
+        /// <param name="copyInf"></param>
         private void CopyStructureThread(object copyInf)
         {
             var copyInfo = (CopyInfo)copyInf;
             var neededPath = copyInfo.NeededPath;
             string drive = "\\\\.\\" + copyInfo.SelectedDrive;
             drive = drive.Remove(drive.Length - 1, 1);
-            
+            //анализ выбранного диска
             DiskInfo diskInfoHandle = new DiskInfo(drive);
+            //если выбранный диск не является NTFS
             if (diskInfoHandle.NotNTFSFlag)
             {
-                MessageBox.Show("Данный раздел не является томом NTFS");
+                MessageBox.Show("Данный раздел не является томом NTFS!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
                 var np = neededPath.ToCharArray();
                 np[0] = drive[4];
                 string toPath = new string(np);
+                //скопировать каталоги
                 copyInfo.CopyDirs(neededPath, toPath);
-                MessageBox.Show("Каталог успешно скопирован!");
+                MessageBox.Show("Каталог успешно скопирован.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -152,8 +172,14 @@ namespace CourseOSTask
             this.Close();
         }
 
+        /// <summary>
+        /// Обработчик кнопки выбора файлов
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void chooseFilesButton_Click(object sender, EventArgs e)
         {
+            //
             var result = openFileDialog.ShowDialog();
             chosenFilesBox.Items.Clear();
             if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(openFileDialog.SafeFileName))
@@ -164,20 +190,6 @@ namespace CourseOSTask
                     chosenFilesBox.Items.Add(item);
                 }
             }
-
-        }
-
-        private void materialRaisedButton1_Click(object sender, EventArgs e)
-        {
-            var files = new List<string>();
-            //чтение путей файлов, добавленных в ListBox
-            foreach (var item in chosenFilesBox.Items)
-            {
-                files.Add(item.ToString());
-            }
-            //создание и запуск потока анализа файла
-            var analyzeFileGroupThread = new Thread(AnalyzeFileGroupThread);
-            analyzeFileGroupThread.Start(files);
         }
 
         private void AnalyzeFileGroupThread(object filesobj)
@@ -187,7 +199,7 @@ namespace CourseOSTask
 
             if (files.Count == 0)
             {
-                MessageBox.Show("Вы не выбрали ни одного файла!");
+                MessageBox.Show("Вы не выбрали ни одного файла!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
@@ -220,44 +232,21 @@ namespace CourseOSTask
                     }
                     else
                     {
-                        MessageBox.Show($"Файл {file} находится на диске, не являющимся томом NTFS");
+                        MessageBox.Show($"Файл {file} находится на диске, не являющимся томом NTFS", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
 
                 }
-
+                MessageBox.Show("Группа файлов успешно проанализирована", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 AnalyzeDataView.DataSource = null;
                 // вывод данных в таблицу на форме
                 AnalyzeDataView.DataSource = mftViewTable;
             }
         }
 
-        private void saveAnalyzeResults_Click(object sender, EventArgs e)
-        {
-            if (AnalyzeDataView.DataSource != null)
-            {
-                var data = (List<string>)AnalyzeDataView.DataSource;
-                if (data.Count != 0)
-                {
-                    var result = saveFileDialog.ShowDialog();
-                    if (result == DialogResult.OK)
-                    {
-                        //StreamWriter sw = new StreamWriter();
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Таблица не содержит элементов!");
-                }
-            }
-            else
-            {
-                MessageBox.Show("Таблица не содержит элементов!");
-            }
-        }
 
         private void опрограммеToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("NTFS2Threads (C) 1.0 By Danilov Ilya");
+            MessageBox.Show("NTFS2Threads (C) 1.0 by Danilov Ilya", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void справкаToolStripMenuItem_Click(object sender, EventArgs e)
@@ -265,18 +254,22 @@ namespace CourseOSTask
             Process.Start("NTFS2Threads.chm");
         }
 
-        private void materialFlatButton1_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Обработчик нажатия на кнопку Анализ
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void analyzeMFTButton_Click(object sender, EventArgs e)
         {
-            var result = openFileDialog.ShowDialog();
-            chosenFilesBox.Items.Clear();
-            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(openFileDialog.SafeFileName))
+            var files = new List<string>();
+            //чтение путей файлов, добавленных в ListBox
+            foreach (var item in chosenFilesBox.Items)
             {
-                var files = openFileDialog.FileNames;
-                foreach (var item in files)
-                {
-                    chosenFilesBox.Items.Add(item);
-                }
+                files.Add(item.ToString());
             }
+            //создание и запуск потока анализа файла
+            var analyzeFileGroupThread = new Thread(AnalyzeFileGroupThread);
+            analyzeFileGroupThread.Start(files);
         }
     }
 }

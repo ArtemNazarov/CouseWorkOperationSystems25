@@ -230,7 +230,7 @@
             this.chooseFilesButton.TabIndex = 6;
             this.chooseFilesButton.Text = "Выбрать...";
             this.chooseFilesButton.UseVisualStyleBackColor = true;
-            this.chooseFilesButton.Click += new System.EventHandler(this.materialFlatButton1_Click);
+            this.chooseFilesButton.Click += new System.EventHandler(this.chooseFilesButton_Click);
             // 
             // AnalyzeDataView
             // 
@@ -259,7 +259,7 @@
             this.analyzeMFTButton.TabIndex = 4;
             this.analyzeMFTButton.Text = "Анализ";
             this.analyzeMFTButton.UseVisualStyleBackColor = true;
-            this.analyzeMFTButton.Click += new System.EventHandler(this.materialRaisedButton1_Click);
+            this.analyzeMFTButton.Click += new System.EventHandler(this.analyzeMFTButton_Click);
             // 
             // materialLabel3
             // 

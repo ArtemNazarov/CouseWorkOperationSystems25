@@ -57,7 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="WinAPI\Attribute.cs" />
-    <Compile Include="WinAPI\AttributeTypes.cs" />
+    <Compile Include="WinAPI\AttrDef.cs" />
     <Compile Include="WinAPI\BPB.cs" />
     <Compile Include="WinAPI\Constants.cs" />
     <Compile Include="WinAPI\CopyInfo.cs" />

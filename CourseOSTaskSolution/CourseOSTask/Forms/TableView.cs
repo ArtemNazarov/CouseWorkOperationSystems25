@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace CourseOSTask.WinAPI
 {
+    /// <summary>
+    /// Демонстрация в табличном виде
+    /// </summary>
     public class TableView
     {
         private MFTHandle mft;
@@ -23,14 +26,16 @@ namespace CourseOSTask.WinAPI
             get
             {
                 string result = "";
-                Attribute data = mft.Attributes.Where(a => a.Type == AttributeTypes.AT_DATA).FirstOrDefault(); //Выбираем атрибут Data
+                //Выбираем атрибут Data
+                Attribute data = mft.Attributes.Where(a => a.Type == AttrDef.AT_DATA).FirstOrDefault(); 
                 if (data != null)
                 {
                     if (data.NonResidentFlg == 0)
                         result = "Файл резидентный, хранится в MFT";
                     else
                     {
-                        foreach (Segment item in data.NotResidentAttr.Clusters) //Для каждого списка кластеров
+                        //Для каждого списка кластеров
+                        foreach (Segment item in data.NotResidentAttr.Clusters) 
                         {
                             string startHex = item.Start.ToString("X4");
                             string endHex = item.End.ToString("X4");

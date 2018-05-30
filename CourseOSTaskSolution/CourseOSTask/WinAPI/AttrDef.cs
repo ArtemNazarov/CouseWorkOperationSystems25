@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CourseOSTask.WinAPI
 {
-    public enum AttributeTypes : uint
+    public enum AttrDef : uint
     {
         AT_STANDARD_INFORMATION = 0x10,
         AT_ATTRIBUTE_LIST = 0x20,
