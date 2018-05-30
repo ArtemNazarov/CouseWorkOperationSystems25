@@ -229,6 +229,7 @@ namespace CourseOSTask
                         {
                             mftViewTable.Add(new TableView(diskHandle.GetMftRecord((int)index.IndexedFile)));
                         }
+                        MessageBox.Show("Группа файлов успешно проанализирована", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                     else
                     {
@@ -236,7 +237,6 @@ namespace CourseOSTask
                     }
 
                 }
-                MessageBox.Show("Группа файлов успешно проанализирована", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 AnalyzeDataView.DataSource = null;
                 // вывод данных в таблицу на форме
                 AnalyzeDataView.DataSource = mftViewTable;
